@@ -65,7 +65,6 @@ The following diagram replicates Figure 1 from the research paper, showing the f
 </div>
 
 <script>
-// 数据结构，可直接替换真实 bits
 const examples = [
   {
     case: 1,
@@ -127,6 +126,7 @@ const examples = [
       orig: ['audio/case3/StemA_orig.wav','audio/case3/StemB_orig.wav'],
       wm: ['audio/case3/StemA_wm.wav','audio/case3/StemB_wm.wav'],
       sep: ['audio/case3/our_sep_StemA.wav','audio/case3/our_sep_StemB.wav'],
+      embeddedBits: ['1111000011110000','0000111100001111'],
       decodedBits: ['1111000011110000','0000111100001111'],
       BER: [0.00,0.00],
       mixed: { orig:'audio/case3/our_mixed_orig.wav', wm:'audio/case3/our_mixed_wm.wav'}
@@ -141,7 +141,6 @@ examples.forEach(example=>{
     const methodData = example[method];
     const title = method==='baseline' ? 'Baseline' : 'Jointly Trained';
     let stemHTML = '';
-
     methodData.stems.forEach((stem,idx)=>{
       const embedded = methodData.embeddedBits[idx];
       const decoded = methodData.decodedBits[idx];
@@ -155,6 +154,7 @@ examples.forEach(example=>{
           bitHTML += decoded[i];
         }
       }
+      // BER 框化 + 红绿背景
       const berColor = BER>0 ? '#fee2e2' : '#d1fae5';
       stemHTML += `<div>
         <p class="step-title">${stem}</p>
@@ -176,7 +176,9 @@ examples.forEach(example=>{
     demoContainer.innerHTML += `
     <div class="case-container">
       <h3 class="text-lg font-bold mb-4 academic-font">Mixture Case #${example.case} - ${title}</h3>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">${stemHTML}</div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
+        ${stemHTML}
+      </div>
 
       <h4 class="step-title mt-4">Mixed Audio (${title})</h4>
       <div class="mix-row">

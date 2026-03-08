@@ -16,7 +16,7 @@
 </head>
 <body class="bg-white text-gray-900 leading-relaxed p-6 md:p-12">
 
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-7xl mx-auto"> <!-- 扩大整体最大宽度 -->
         <header class="mb-12 border-b pb-8">
             <h1 class="text-3xl font-bold mb-4 text-center">Audio Watermarking and Source Separation: Performance Demonstration</h1>
             <p class="text-center text-gray-600 italic academic-font">Supplementary Material for Research Paper (Anonymous)</p>
@@ -24,7 +24,7 @@
 
         <!-- Abstract Section -->
         <section class="mb-12">
-            <div class="bg-gray-50 p-6 rounded shadow mb-6 max-w-3xl mx-auto">
+            <div class="bg-gray-50 p-6 rounded shadow mb-6 max-w-5xl mx-auto"> <!-- 宽度扩大 -->
                 <h2 class="text-2xl font-bold mb-4 border-b-2 border-gray-800 pb-2">Abstract</h2>
                 <p class="text-gray-700 academic-font text-sm leading-relaxed">
                     This demo illustrates a separation-first, multi-stream audio watermarking framework. 
@@ -37,27 +37,29 @@
 
         <!-- Workflow / Figure 1 -->
         <section class="mb-12">
-            <div class="bg-gray-50 p-6 rounded shadow mb-6 max-w-3xl mx-auto text-center">
+            <div class="bg-gray-50 p-6 rounded shadow mb-6 max-w-5xl mx-auto text-center"> <!-- 宽度扩大 -->
                 <h2 class="text-2xl font-bold mb-4 border-b-2 border-gray-800 pb-2">Workflow Overview</h2>
                 <p class="text-gray-700 academic-font text-sm mb-4">
                     The following diagram replicates Figure 1 from our research, showing the full pipeline:
                 </p>
                 <div class="flex justify-center mb-6">
-                    <img src="figure/figure1.png" alt="Workflow" class="max-w-full md:max-w-3xl border rounded shadow-md">
+                    <img src="figure/figure1.png" alt="Workflow" class="max-w-full md:max-w-4xl border rounded shadow-md"> <!-- 图片最大宽度也略增 -->
                 </div>
             </div>
         </section>
 
         <!-- Audio Demo Section -->
         <section class="mb-20">
-            <h2 class="text-2xl font-bold mb-6 border-b-2 border-gray-800 pb-2">Audio Demonstration: Baseline vs Our Method</h2>
-            <p class="mb-6 text-gray-700 academic-font text-sm">
-                Each case below shows: Original Stem A/B → Watermarked → Mixed → Separated → Decoded Watermark. 
-                Compare baseline and our method.
-            </p>
+            <div class="max-w-5xl mx-auto"> <!-- 对齐上面的卡片宽度 -->
+                <h2 class="text-2xl font-bold mb-6 border-b-2 border-gray-800 pb-2">Audio Demonstration: Baseline vs Our Method</h2>
+                <p class="mb-6 text-gray-700 academic-font text-sm">
+                    Each case below shows: Original Stem A/B → Watermarked → Mixed → Separated → Decoded Watermark. 
+                    Compare baseline and our method.
+                </p>
 
-            <div id="demo-container" class="space-y-12">
-                <!-- Example Case Template populated by JS -->
+                <div id="demo-container" class="space-y-12">
+                    <!-- Example Case Template populated by JS -->
+                </div>
             </div>
         </section>
 

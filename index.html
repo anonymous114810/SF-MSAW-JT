@@ -12,12 +12,12 @@ audio { height: 30px; width: 100%; min-width: 150px; margin-bottom: 0.5rem; }
 .step-title { font-weight: 600; color: #1f2937; margin-top: 1rem; margin-bottom: 0.25rem; }
 .bit-display { font-family: monospace; font-size: 0.85rem; padding: 4px; border-radius: 4px; background-color: #f3f4f6; white-space: pre-wrap; }
 .bit-error { color: red; font-weight: bold; }
+.ber-display { font-family: monospace; font-size: 0.85rem; padding: 2px 4px; border-radius: 4px; display: inline-block; }
 .case-container { border: 1px solid #e5e7eb; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; }
 .mix-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem; }
 .mix-col { flex: 1 1 48%; }
 .method-divider { border-top: 2px dashed #9ca3af; margin: 2rem 0; }
 .section-title { text-align: center; }
-.card { background-color: #f3f4f6; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 2rem; }
 </style>
 </head>
 <body class="bg-white text-gray-900 leading-relaxed p-6 md:p-12">
@@ -29,7 +29,7 @@ audio { height: 30px; width: 100%; min-width: 150px; margin-bottom: 0.5rem; }
 </header>
 
 <section class="mb-12">
-<div class="card max-w-5xl mx-auto text-center">
+<div class="bg-gray-50 p-6 rounded shadow mb-6 max-w-5xl mx-auto text-center">
 <h2 class="text-2xl font-bold mb-4 border-b-2 border-gray-800 pb-2 section-title">Abstract</h2>
 <p class="text-gray-700 academic-font text-sm leading-relaxed">
 This demo illustrates a separation-first, multi-stream audio watermarking framework. 
@@ -41,7 +41,7 @@ while our jointly trained approach demonstrates high post-separation decoding ac
 </section>
 
 <section class="mb-12">
-<div class="card max-w-5xl mx-auto text-center">
+<div class="bg-gray-50 p-6 rounded shadow mb-6 max-w-5xl mx-auto text-center">
 <h2 class="text-2xl font-bold mb-4 border-b-2 border-gray-800 pb-2 section-title">Workflow Overview</h2>
 <p class="text-gray-700 academic-font text-sm mb-4">
 The following diagram replicates Figure 1 from the research paper, showing the full pipeline:
@@ -53,7 +53,7 @@ The following diagram replicates Figure 1 from the research paper, showing the f
 </section>
 
 <section class="mb-20">
-<div class="card max-w-5xl mx-auto">
+<div class="max-w-5xl mx-auto">
 <h2 class="text-2xl font-bold mb-6 border-b-2 border-gray-800 pb-2 section-title">Audio Demonstration: Baseline vs Jointly Trained</h2>
 <div id="demo-container" class="space-y-12"></div>
 </div>
@@ -65,6 +65,7 @@ The following diagram replicates Figure 1 from the research paper, showing the f
 </div>
 
 <script>
+// 数据结构，易于替换真实 bits
 const examples = [
   {
     case: 1,
@@ -75,77 +76,34 @@ const examples = [
       embeddedBits: ['1011010010110100','1101010101010101'],
       sep: ['audio/case1/baseline_sep_StemA.wav','audio/case1/baseline_sep_StemB.wav'],
       decodedBits: ['01011?101?0101??','11010?011??1010?'],
-      BER: [0.48,0.52],
+      BER: ['0.48','0.52'],
       mixed: { orig:'audio/case1/baseline_mixed_orig.wav', wm:'audio/case1/baseline_mixed_wm.wav'}
     },
     joint: {
       orig: ['audio/case1/StemA_orig.wav','audio/case1/StemB_orig.wav'],
       wm: ['audio/case1/StemA_wm.wav','audio/case1/StemB_wm.wav'],
-      sep: ['audio/case1/our_sep_StemA.wav','audio/case1/our_sep_StemB.wav'],
       embeddedBits: ['1011010010110100','1101010101010101'],
+      sep: ['audio/case1/our_sep_StemA.wav','audio/case1/our_sep_StemB.wav'],
       decodedBits: ['1011010010110100','1101010101010101'],
-      BER: [0.00,0.00],
+      BER: ['0.00','0.00'],
       mixed: { orig:'audio/case1/our_mixed_orig.wav', wm:'audio/case1/our_mixed_wm.wav'}
     }
   },
-  {
-    case: 2,
-    stems: ['StemA','StemB'],
-    baseline: {
-      orig: ['audio/case2/StemA_orig.wav','audio/case2/StemB_orig.wav'],
-      wm: ['audio/case2/StemA_wm.wav','audio/case2/StemB_wm.wav'],
-      embeddedBits: ['1010101010101010','1100110011001100'],
-      sep: ['audio/case2/baseline_sep_StemA.wav','audio/case2/baseline_sep_StemB.wav'],
-      decodedBits: ['1010?010?0101?0?','1100?100?1101??0'],
-      BER: [0.45,0.50],
-      mixed: { orig:'audio/case2/baseline_mixed_orig.wav', wm:'audio/case2/baseline_mixed_wm.wav'}
-    },
-    joint: {
-      orig: ['audio/case2/StemA_orig.wav','audio/case2/StemB_orig.wav'],
-      wm: ['audio/case2/StemA_wm.wav','audio/case2/StemB_wm.wav'],
-      sep: ['audio/case2/our_sep_StemA.wav','audio/case2/our_sep_StemB.wav'],
-      embeddedBits: ['1010101010101010','1100110011001100'],
-      decodedBits: ['1010101010101010','1100110011001100'],
-      BER: [0.00,0.00],
-      mixed: { orig:'audio/case2/our_mixed_orig.wav', wm:'audio/case2/our_mixed_wm.wav'}
-    }
-  },
-  {
-    case: 3,
-    stems: ['StemA','StemB'],
-    baseline: {
-      orig: ['audio/case3/StemA_orig.wav','audio/case3/StemB_orig.wav'],
-      wm: ['audio/case3/StemA_wm.wav','audio/case3/StemB_wm.wav'],
-      embeddedBits: ['1111000011110000','0000111100001111'],
-      sep: ['audio/case3/baseline_sep_StemA.wav','audio/case3/baseline_sep_StemB.wav'],
-      decodedBits: ['1111?000?1110?0?','0000?111?0001??1'],
-      BER: [0.47,0.51],
-      mixed: { orig:'audio/case3/baseline_mixed_orig.wav', wm:'audio/case3/baseline_mixed_wm.wav'}
-    },
-    joint: {
-      orig: ['audio/case3/StemA_orig.wav','audio/case3/StemB_orig.wav'],
-      wm: ['audio/case3/StemA_wm.wav','audio/case3/StemB_wm.wav'],
-      sep: ['audio/case3/our_sep_StemA.wav','audio/case3/our_sep_StemB.wav'],
-      embeddedBits: ['1111000011110000','0000111100001111'],
-      decodedBits: ['1111000011110000','0000111100001111'],
-      BER: [0.00,0.00],
-      mixed: { orig:'audio/case3/our_mixed_orig.wav', wm:'audio/case3/our_mixed_wm.wav'}
-    }
-  }
+  // 可以继续添加 case2, case3 ...
 ];
 
+// 渲染 HTML
 const demoContainer = document.getElementById('demo-container');
-
 examples.forEach(example=>{
   ['baseline','joint'].forEach(method=>{
     const methodData = example[method];
     const title = method==='baseline' ? 'Baseline' : 'Jointly Trained';
     let stemHTML = '';
+    methodData.stems = methodData.stems || ['StemA','StemB']; // 默认
     methodData.stems.forEach((stem,idx)=>{
+      // 高亮错误 bit
       const embedded = methodData.embeddedBits[idx];
       const decoded = methodData.decodedBits[idx];
-      const BER = methodData.BER[idx];
-      // 高亮错误 bit
       let bitHTML = '';
       for(let i=0;i<decoded.length;i++){
         if(decoded[i]!==embedded[i] && decoded[i]!=='?'){
@@ -154,8 +112,7 @@ examples.forEach(example=>{
           bitHTML += decoded[i];
         }
       }
-      // BER 框化 + 红绿背景
-      const berColor = BER>0 ? '#fee2e2' : '#d1fae5';
+
       stemHTML += `<div>
         <p class="step-title">${stem}</p>
         <p class="text-sm step-title">Origin</p>
@@ -169,7 +126,7 @@ examples.forEach(example=>{
         <p class="text-sm step-title">Decoded Bits</p>
         <pre class="bit-display">${bitHTML}</pre>
         <p class="text-sm step-title">BER</p>
-        <pre class="bit-display" style="background-color:${berColor}">${BER}</pre>
+        <span class="ber-display">${methodData.BER[idx]}</span>
       </div>`;
     });
 
@@ -179,7 +136,6 @@ examples.forEach(example=>{
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
         ${stemHTML}
       </div>
-
       <h4 class="step-title mt-4">Mixed Audio (${title})</h4>
       <div class="mix-row">
         <div class="mix-col">
@@ -191,7 +147,6 @@ examples.forEach(example=>{
           <audio controls src="${methodData.mixed.wm}"></audio>
         </div>
       </div>
-
       <div class="method-divider"></div>
     </div>`;
   });

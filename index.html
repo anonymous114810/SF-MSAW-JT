@@ -6,17 +6,18 @@
 <title>Audio Watermarking and Source Separation Demo</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-    body { font-family: "Times New Roman", Georgia, serif; }
-    .academic-font { font-family: Arial, Helvetica, sans-serif; }
-    audio { height: 30px; width: 100%; min-width: 150px; margin-bottom: 0.5rem; }
-    .step-title { font-weight: 600; color: #1f2937; margin-top: 1rem; margin-bottom: 0.25rem; }
-    .bit-display { font-family: monospace; font-size: 0.85rem; padding: 4px; border-radius: 4px; background-color: #f3f4f6; }
-    .ber-display { font-family: monospace; font-size: 0.85rem; padding: 2px 4px; border-radius: 4px; display: inline-block; }
-    .case-container { border: 1px solid #e5e7eb; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; }
-    .mix-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem; }
-    .mix-col { flex: 1 1 48%; }
-    .method-divider { border-top: 2px dashed #9ca3af; margin: 2rem 0; }
-    .section-title { text-align: center; }
+body { font-family: "Times New Roman", Georgia, serif; }
+.academic-font { font-family: Arial, Helvetica, sans-serif; }
+audio { height: 30px; width: 100%; min-width: 150px; margin-bottom: 0.5rem; }
+.step-title { font-weight: 600; color: #1f2937; margin-top: 1rem; margin-bottom: 0.25rem; }
+.bit-display { font-family: monospace; font-size: 0.85rem; padding: 4px; border-radius: 4px; background-color: #f3f4f6; white-space: pre-wrap; }
+.bit-error { color: red; font-weight: bold; }
+.ber-display { font-family: monospace; font-size: 0.85rem; padding: 2px 4px; border-radius: 4px; display: inline-block; }
+.case-container { border: 1px solid #e5e7eb; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; }
+.mix-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem; }
+.mix-col { flex: 1 1 48%; }
+.method-divider { border-top: 2px dashed #9ca3af; margin: 2rem 0; }
+.section-title { text-align: center; }
 </style>
 </head>
 <body class="bg-white text-gray-900 leading-relaxed p-6 md:p-12">
@@ -27,7 +28,6 @@
 <p class="text-center text-gray-600 italic academic-font">Supplementary Material for Research Paper (Anonymous)</p>
 </header>
 
-<!-- Abstract -->
 <section class="mb-12">
 <div class="bg-gray-50 p-6 rounded shadow mb-6 max-w-5xl mx-auto text-center">
 <h2 class="text-2xl font-bold mb-4 border-b-2 border-gray-800 pb-2 section-title">Abstract</h2>
@@ -40,7 +40,6 @@ while our jointly trained approach demonstrates high post-separation decoding ac
 </div>
 </section>
 
-<!-- Workflow Figure -->
 <section class="mb-12">
 <div class="bg-gray-50 p-6 rounded shadow mb-6 max-w-5xl mx-auto text-center">
 <h2 class="text-2xl font-bold mb-4 border-b-2 border-gray-800 pb-2 section-title">Workflow Overview</h2>
@@ -53,7 +52,6 @@ The following diagram replicates Figure 1 from the research paper, showing the f
 </div>
 </section>
 
-<!-- Audio Demonstration -->
 <section class="mb-20">
 <div class="max-w-5xl mx-auto">
 <h2 class="text-2xl font-bold mb-6 border-b-2 border-gray-800 pb-2 section-title">Audio Demonstration: Baseline vs Jointly Trained</h2>
@@ -67,84 +65,92 @@ The following diagram replicates Figure 1 from the research paper, showing the f
 </div>
 
 <script>
+// 数据结构，易于替换真实 bits
+const examples = [
+  {
+    case: 1,
+    stems: ['StemA','StemB'],
+    baseline: {
+      orig: ['audio/case1/StemA_orig.wav','audio/case1/StemB_orig.wav'],
+      wm: ['audio/case1/StemA_wm.wav','audio/case1/StemB_wm.wav'],
+      embeddedBits: ['1011010010110100','1101010101010101'],
+      sep: ['audio/case1/baseline_sep_StemA.wav','audio/case1/baseline_sep_StemB.wav'],
+      decodedBits: ['01011?101?0101??','11010?011??1010?'],
+      BER: ['0.48','0.52'],
+      mixed: { orig:'audio/case1/baseline_mixed_orig.wav', wm:'audio/case1/baseline_mixed_wm.wav'}
+    },
+    joint: {
+      orig: ['audio/case1/StemA_orig.wav','audio/case1/StemB_orig.wav'],
+      wm: ['audio/case1/StemA_wm.wav','audio/case1/StemB_wm.wav'],
+      embeddedBits: ['1011010010110100','1101010101010101'],
+      sep: ['audio/case1/our_sep_StemA.wav','audio/case1/our_sep_StemB.wav'],
+      decodedBits: ['1011010010110100','1101010101010101'],
+      BER: ['0.00','0.00'],
+      mixed: { orig:'audio/case1/our_mixed_orig.wav', wm:'audio/case1/our_mixed_wm.wav'}
+    }
+  },
+  // 可以继续添加 case2, case3 ...
+];
+
+// 渲染 HTML
 const demoContainer = document.getElementById('demo-container');
-const stems = ['StemA', 'StemB'];
+examples.forEach(example=>{
+  ['baseline','joint'].forEach(method=>{
+    const methodData = example[method];
+    const title = method==='baseline' ? 'Baseline' : 'Jointly Trained';
+    let stemHTML = '';
+    methodData.stems = methodData.stems || ['StemA','StemB']; // 默认
+    methodData.stems.forEach((stem,idx)=>{
+      // 高亮错误 bit
+      const embedded = methodData.embeddedBits[idx];
+      const decoded = methodData.decodedBits[idx];
+      let bitHTML = '';
+      for(let i=0;i<decoded.length;i++){
+        if(decoded[i]!==embedded[i] && decoded[i]!=='?'){
+          bitHTML += `<span class="bit-error">${decoded[i]}</span>`;
+        } else {
+          bitHTML += decoded[i];
+        }
+      }
 
-for (let caseIdx=1; caseIdx<=3; caseIdx++) {
-
-    let stemHTMLBaseline = '';
-    let stemHTMLJoint = '';
-
-    stems.forEach(stem=>{
-        // Baseline Stem
-        stemHTMLBaseline += `
-        <div>
-            <p class="step-title">${stem}</p>
-            <p class="text-sm step-title">Origin</p>
-            <audio controls src="audio/case${caseIdx}/${stem}_orig.wav"></audio>
-            <p class="text-sm step-title">Watermarked</p>
-            <audio controls src="audio/case${caseIdx}/${stem}_wm.wav"></audio>
-            <p class="text-sm step-title">Embedded Watermark Bits</p>
-            <pre class="bit-display">1011010010110100</pre>
-            <p class="text-sm step-title">Separated Audio</p>
-            <audio controls src="audio/case${caseIdx}/baseline_sep_${stem}.wav"></audio>
-            <p class="text-sm step-title">Decoded Bits</p>
-            <pre class="bit-display bg-red-100">01011?101?0101??</pre>
-            <p class="text-sm step-title">BER</p>
-            <span class="ber-display" style="background-color:#fee2e2;">0.48</span>
-        </div>`;
-
-        // Joint Stem
-        stemHTMLJoint += `
-        <div>
-            <p class="step-title">${stem}</p>
-            <p class="text-sm step-title">Origin</p>
-            <audio controls src="audio/case${caseIdx}/${stem}_orig.wav"></audio>
-            <p class="text-sm step-title">Watermarked</p>
-            <audio controls src="audio/case${caseIdx}/${stem}_wm.wav"></audio>
-            <p class="text-sm step-title">Embedded Watermark Bits</p>
-            <pre class="bit-display">1011010010110100</pre>
-            <p class="text-sm step-title">Separated Audio</p>
-            <audio controls src="audio/case${caseIdx}/our_sep_${stem}.wav"></audio>
-            <p class="text-sm step-title">Decoded Bits</p>
-            <pre class="bit-display bg-green-100">1011010010110100</pre>
-            <p class="text-sm step-title">BER</p>
-            <span class="ber-display" style="background-color:#d1fae5;">0.00</span>
-        </div>`;
+      stemHTML += `<div>
+        <p class="step-title">${stem}</p>
+        <p class="text-sm step-title">Origin</p>
+        <audio controls src="${methodData.orig[idx]}"></audio>
+        <p class="text-sm step-title">Watermarked</p>
+        <audio controls src="${methodData.wm[idx]}"></audio>
+        <p class="text-sm step-title">Embedded Watermark Bits</p>
+        <pre class="bit-display">${embedded}</pre>
+        <p class="text-sm step-title">Separated Audio</p>
+        <audio controls src="${methodData.sep[idx]}"></audio>
+        <p class="text-sm step-title">Decoded Bits</p>
+        <pre class="bit-display">${bitHTML}</pre>
+        <p class="text-sm step-title">BER</p>
+        <span class="ber-display">${methodData.BER[idx]}</span>
+      </div>`;
     });
 
     demoContainer.innerHTML += `
     <div class="case-container">
-        <h3 class="text-lg font-bold mb-4 academic-font">Mixture Case #${caseIdx} - Baseline</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">${stemHTMLBaseline}</div>
-        <div class="method-divider"></div>
-        <h3 class="text-lg font-bold mb-4 academic-font">Mixture Case #${caseIdx} - Jointly Trained</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">${stemHTMLJoint}</div>
-
-        <!-- Mixed Audio for each method -->
-        <h4 class="step-title mt-4">Mixed Audio</h4>
-        <div class="mix-row">
-            <div class="mix-col">
-                <p class="text-sm">Original Stems Mixed (Baseline)</p>
-                <audio controls src="audio/case${caseIdx}/baseline_mixed_orig.wav"></audio>
-            </div>
-            <div class="mix-col">
-                <p class="text-sm">Watermarked Stems Mixed (Baseline)</p>
-                <audio controls src="audio/case${caseIdx}/baseline_mixed_wm.wav"></audio>
-            </div>
+      <h3 class="text-lg font-bold mb-4 academic-font">Mixture Case #${example.case} - ${title}</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
+        ${stemHTML}
+      </div>
+      <h4 class="step-title mt-4">Mixed Audio (${title})</h4>
+      <div class="mix-row">
+        <div class="mix-col">
+          <p class="text-sm">Original Stems Mixed</p>
+          <audio controls src="${methodData.mixed.orig}"></audio>
         </div>
-        <div class="mix-row mt-4">
-            <div class="mix-col">
-                <p class="text-sm">Original Stems Mixed (Joint)</p>
-                <audio controls src="audio/case${caseIdx}/our_mixed_orig.wav"></audio>
-            </div>
-            <div class="mix-col">
-                <p class="text-sm">Watermarked Stems Mixed (Joint)</p>
-                <audio controls src="audio/case${caseIdx}/our_mixed_wm.wav"></audio>
-            </div>
+        <div class="mix-col">
+          <p class="text-sm">Watermarked Stems Mixed</p>
+          <audio controls src="${methodData.mixed.wm}"></audio>
         </div>
+      </div>
+      <div class="method-divider"></div>
     </div>`;
-}
+  });
+});
 </script>
 </body>
 </html>

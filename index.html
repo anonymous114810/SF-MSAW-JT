@@ -12,7 +12,7 @@ audio { height: 30px; width: 100%; min-width: 150px; margin-bottom: 0.5rem; }
 .step-title { font-weight: 600; color: #1f2937; margin-top: 1rem; margin-bottom: 0.25rem; }
 .bit-display { font-family: monospace; font-size: 0.85rem; padding: 4px; border-radius: 4px; background-color: #f3f4f6; white-space: pre-wrap; }
 .bit-error { color: red; font-weight: bold; }
-.case-container { border: 1px solid #e5e7eb; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; }
+.case-container { border: 1px solid #e5e7eb; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; background-color: #ffffff; }
 .mix-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem; }
 .mix-col { flex: 1 1 48%; }
 .method-divider { border-top: 2px dashed #9ca3af; margin: 2rem 0; }
@@ -79,6 +79,7 @@ for (let caseIdx=1; caseIdx<=3; caseIdx++) {
         const embedded = '1011010010110100';
         const decoded = i===0 ? '01011?101?0101??' : '11010?011??1010?';
         const BER = i===0 ? 0.48 : 0.52;
+        // 高亮错误 bit
         let bitHTML='';
         for(let j=0;j<decoded.length;j++){
             if(decoded[j]!==embedded[j] && decoded[j]!=='?'){
@@ -132,7 +133,7 @@ for (let caseIdx=1; caseIdx<=3; caseIdx++) {
     }
 
     demoContainer.innerHTML+=`
-    <div class="case-container">
+    <div class="case-container bg-white">
         <h3 class="text-lg font-bold mb-4 academic-font">Mixture Case #${caseIdx} - Baseline</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">${stemHTMLBaseline}</div>
         <h4 class="step-title mt-4">Mixed Audio (Baseline)</h4>

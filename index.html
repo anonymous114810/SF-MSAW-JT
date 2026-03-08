@@ -16,6 +16,7 @@
     .mix-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem; }
     .mix-col { flex: 1 1 48%; }
     .method-divider { border-top: 2px dashed #9ca3af; margin: 2rem 0; }
+    .section-title { text-align: center; }
 </style>
 </head>
 <body class="bg-white text-gray-900 leading-relaxed p-6 md:p-12">
@@ -26,9 +27,10 @@
 <p class="text-center text-gray-600 italic academic-font">Supplementary Material for Research Paper (Anonymous)</p>
 </header>
 
+<!-- Abstract -->
 <section class="mb-12">
-<div class="bg-gray-50 p-6 rounded shadow mb-6 max-w-5xl mx-auto">
-<h2 class="text-2xl font-bold mb-4 border-b-2 border-gray-800 pb-2">Abstract</h2>
+<div class="bg-gray-50 p-6 rounded shadow mb-6 max-w-5xl mx-auto text-center">
+<h2 class="text-2xl font-bold mb-4 border-b-2 border-gray-800 pb-2 section-title">Abstract</h2>
 <p class="text-gray-700 academic-font text-sm leading-relaxed">
 This demo illustrates a separation-first, multi-stream audio watermarking framework. 
 Two stems are independently watermarked, mixed, separated, and decoded. 
@@ -38,9 +40,10 @@ while our jointly trained approach demonstrates high post-separation decoding ac
 </div>
 </section>
 
+<!-- Workflow Figure -->
 <section class="mb-12">
 <div class="bg-gray-50 p-6 rounded shadow mb-6 max-w-5xl mx-auto text-center">
-<h2 class="text-2xl font-bold mb-4 border-b-2 border-gray-800 pb-2">Workflow Overview</h2>
+<h2 class="text-2xl font-bold mb-4 border-b-2 border-gray-800 pb-2 section-title">Workflow Overview</h2>
 <p class="text-gray-700 academic-font text-sm mb-4">
 The following diagram replicates Figure 1 from the research paper, showing the full pipeline:
 </p>
@@ -50,9 +53,10 @@ The following diagram replicates Figure 1 from the research paper, showing the f
 </div>
 </section>
 
+<!-- Audio Demonstration -->
 <section class="mb-20">
 <div class="max-w-5xl mx-auto">
-<h2 class="text-2xl font-bold mb-6 border-b-2 border-gray-800 pb-2">Audio Demonstration: Baseline vs Jointly Trained</h2>
+<h2 class="text-2xl font-bold mb-6 border-b-2 border-gray-800 pb-2 section-title">Audio Demonstration: Baseline vs Jointly Trained</h2>
 <div id="demo-container" class="space-y-12"></div>
 </div>
 </section>
@@ -66,13 +70,14 @@ The following diagram replicates Figure 1 from the research paper, showing the f
 const demoContainer = document.getElementById('demo-container');
 const stems = ['StemA', 'StemB'];
 
-// 三组示例
 for (let caseIdx=1; caseIdx<=3; caseIdx++) {
 
-    // 生成每个Stem左右对照HTML
-    let stemHTML = '';
+    let stemHTMLBaseline = '';
+    let stemHTMLJoint = '';
+
     stems.forEach(stem=>{
-        stemHTML += `
+        // Baseline Stem
+        stemHTMLBaseline += `
         <div>
             <p class="step-title">${stem}</p>
             <p class="text-sm step-title">Origin</p>
@@ -82,25 +87,41 @@ for (let caseIdx=1; caseIdx<=3; caseIdx++) {
             <p class="text-sm step-title">Embedded Watermark Bits</p>
             <pre class="bit-display">1011010010110100</pre>
             <p class="text-sm step-title">Separated Audio</p>
-            <audio controls src="audio/case${caseIdx}/sep_${stem}.wav"></audio>
+            <audio controls src="audio/case${caseIdx}/baseline_sep_${stem}.wav"></audio>
             <p class="text-sm step-title">Decoded Bits</p>
-            <pre class="bit-display">01011?101?0101??</pre>
+            <pre class="bit-display bg-red-100">01011?101?0101??</pre>
             <p class="text-sm step-title">BER</p>
-            <span class="ber-display">0.48</span>
+            <span class="ber-display" style="background-color:#fee2e2;">0.48</span>
+        </div>`;
+
+        // Joint Stem
+        stemHTMLJoint += `
+        <div>
+            <p class="step-title">${stem}</p>
+            <p class="text-sm step-title">Origin</p>
+            <audio controls src="audio/case${caseIdx}/${stem}_orig.wav"></audio>
+            <p class="text-sm step-title">Watermarked</p>
+            <audio controls src="audio/case${caseIdx}/${stem}_wm.wav"></audio>
+            <p class="text-sm step-title">Embedded Watermark Bits</p>
+            <pre class="bit-display">1011010010110100</pre>
+            <p class="text-sm step-title">Separated Audio</p>
+            <audio controls src="audio/case${caseIdx}/our_sep_${stem}.wav"></audio>
+            <p class="text-sm step-title">Decoded Bits</p>
+            <pre class="bit-display bg-green-100">1011010010110100</pre>
+            <p class="text-sm step-title">BER</p>
+            <span class="ber-display" style="background-color:#d1fae5;">0.00</span>
         </div>`;
     });
 
     demoContainer.innerHTML += `
     <div class="case-container">
         <h3 class="text-lg font-bold mb-4 academic-font">Mixture Case #${caseIdx} - Baseline</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
-            ${stemHTML}
-        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">${stemHTMLBaseline}</div>
         <div class="method-divider"></div>
         <h3 class="text-lg font-bold mb-4 academic-font">Mixture Case #${caseIdx} - Jointly Trained</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
-            ${stemHTML.replace(/01011\?101\?0101\?\?/g,'1011010010110100').replace(/0.48/g,'0.00').replace(/sep_/g,'our_sep_')}
-        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">${stemHTMLJoint}</div>
+
+        <!-- Mixed Audio for each method -->
         <h4 class="step-title mt-4">Mixed Audio</h4>
         <div class="mix-row">
             <div class="mix-col">
@@ -125,6 +146,5 @@ for (let caseIdx=1; caseIdx<=3; caseIdx++) {
     </div>`;
 }
 </script>
-
 </body>
 </html>

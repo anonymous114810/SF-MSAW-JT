@@ -1,28 +1,105 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <title>Audio Watermarking Demo</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Watermarking and Source Separation Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        table { width: 100%; border-collapse: collapse; }
-        td, th { border: 1px solid #ddd; padding: 10px; text-align: center; }
-        audio { width: 200px; }
+        body { font-family: "Times New Roman", Georgia, serif; }
+        .academic-font { font-family: Arial, Helvetica, sans-serif; }
+        audio { height: 30px; width: 100%; min-width: 150px; }
+        .table-container { border: 1px solid #e5e7eb; border-radius: 4px; }
+        th { font-weight: 600; color: #374151; background-color: #f9fafb; border-bottom: 2px solid #e5e7eb; }
     </style>
 </head>
-<body>
-    <h1>论文题目：Deep Audio Watermarking...</h1>
-    <table>
-        <tr>
-            <th>Sample ID</th>
-            <th>Original Audio</th>
-            <th>Watermarked</th>
-            <th>Difference (x10 gain)</th>
-        </tr>
-        <tr>
-            <td>001</td>
-            <td><audio controls src="audio/001_orig.wav"></audio></td>
-            <td><audio controls src="audio/001_wm.wav"></audio></td>
-            <td><audio controls src="audio/001_diff.wav"></audio></td>
-        </tr>
-    </table>
+<body class="bg-white text-gray-900 leading-relaxed p-6 md:p-12">
+
+    <div class="max-w-5xl mx-auto">
+        <header class="mb-12 border-b pb-8">
+            <h1 class="text-3xl font-bold mb-4 text-center">Audio Watermarking and Source Separation: Performance Demonstration</h1>
+            <p class="text-center text-gray-600 italic academic-font">Supplementary Material for Research Paper</p>
+        </header>
+
+        <section class="mb-20">
+            <h2 class="text-2xl font-bold mb-6 pb-2 border-b-2 border-gray-800">1. Audio Watermarking Perceptual Quality</h2>
+            <p class="mb-4 text-gray-700 academic-font text-sm">Comparison between original 2s audio segments and their watermarked counterparts (10 test cases).</p>
+            
+            <div class="table-container overflow-x-auto">
+                <table class="w-full text-sm text-left border-collapse">
+                    <thead>
+                        <tr>
+                            <th class="p-3 border-r">Index</th>
+                            <th class="p-3 border-r text-center">Original Audio</th>
+                            <th class="p-3 text-center">Watermarked Audio</th>
+                        </tr>
+                    </thead>
+                    <tbody id="watermark-table-body" class="divide-y border-t">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="mb-20">
+            <h2 class="text-2xl font-bold mb-6 pb-2 border-b-2 border-gray-800">2. Demucs Source Separation Results</h2>
+            <p class="mb-8 text-gray-700 academic-font text-sm">Separation results across 5 distinct mixtures. For each stem, "GT" represents Ground Truth and "EST" represents Estimated/Separated result.</p>
+            
+            <div id="separation-container" class="space-y-12">
+                </div>
+        </section>
+
+        <footer class="mt-20 pt-8 border-t text-center text-gray-500 text-xs academic-font">
+            <p>Paper Demo Page - Created with Audio Helper Assistant</p>
+        </footer>
+    </div>
+
+    <script>
+        // 配置：水印部分 (10组)
+        const wmTable = document.getElementById('watermark-table-body');
+        for (let i = 1; i <= 10; i++) {
+            const idx = i.toString().padStart(2, '0');
+            wmTable.innerHTML += `
+                <tr class="hover:bg-gray-50">
+                    <td class="p-3 border-r font-mono font-bold text-gray-400">#${idx}</td>
+                    <td class="p-3 border-r"><audio controls src="audio/watermark/${idx}_orig.wav"></audio></td>
+                    <td class="p-3"><audio controls src="audio/watermark/${idx}_wm.wav"></audio></td>
+                </tr>
+            `;
+        }
+
+        // 配置：分离部分 (5组)
+        const sepContainer = document.getElementById('separation-container');
+        const stems = ['vocal', 'drums', 'bass', 'other'];
+        
+        for (let i = 1; i <= 5; i++) {
+            let stemsHTML = '';
+            stems.forEach(stem => {
+                stemsHTML += `
+                    <div class="p-4 border rounded bg-gray-50">
+                        <p class="font-bold text-xs uppercase tracking-wider mb-3 text-gray-600 border-b pb-1">${stem}</p>
+                        <div class="space-y-3">
+                            <div>
+                                <span class="text-[10px] font-bold text-gray-400 block mb-1">GROUND TRUTH</span>
+                                <audio controls src="audio/separation/case${i}/${stem}_gt.wav"></audio>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-bold text-blue-500 block mb-1">SEPARATED (EST)</span>
+                                <audio controls src="audio/separation/case${i}/${stem}_est.wav"></audio>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            sepContainer.innerHTML += `
+                <div class="border p-6 rounded-md">
+                    <h3 class="text-lg font-bold mb-6 academic-font">Mixture Case Study #${i}</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        ${stemsHTML}
+                    </div>
+                </div>
+            `;
+        }
+    </script>
 </body>
 </html>

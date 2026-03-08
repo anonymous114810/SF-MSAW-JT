@@ -12,7 +12,7 @@ audio { height: 30px; width: 100%; min-width: 150px; margin-bottom: 0.5rem; }
 .step-title { font-weight: 600; color: #1f2937; margin-top: 1rem; margin-bottom: 0.25rem; }
 .bit-display { font-family: monospace; font-size: 0.85rem; padding: 4px; border-radius: 4px; background-color: #f3f4f6; white-space: pre-wrap; }
 .bit-error { color: red; font-weight: bold; }
-.ber-display { font-family: monospace; font-size: 0.85rem; padding: 2px 4px; border-radius: 4px; display: inline-block; }
+.ber-display { font-family: monospace; font-size: 0.85rem; padding: 4px; border-radius: 4px; display: inline-block; color: black; }
 .case-container { border: 1px solid #e5e7eb; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; }
 .mix-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem; }
 .mix-col { flex: 1 1 48%; }
@@ -65,7 +65,7 @@ The following diagram replicates Figure 1 from the research paper, showing the f
 </div>
 
 <script>
-// 数据结构，易于替换真实 bits
+// 数据结构，便于修改真实 bits 和 BER
 const examples = [
   {
     case: 1,
@@ -76,7 +76,7 @@ const examples = [
       embeddedBits: ['1011010010110100','1101010101010101'],
       sep: ['audio/case1/baseline_sep_StemA.wav','audio/case1/baseline_sep_StemB.wav'],
       decodedBits: ['01011?101?0101??','11010?011??1010?'],
-      BER: ['0.48','0.52'],
+      BER: [0.48,0.52],
       mixed: { orig:'audio/case1/baseline_mixed_orig.wav', wm:'audio/case1/baseline_mixed_wm.wav'}
     },
     joint: {
@@ -85,25 +85,67 @@ const examples = [
       embeddedBits: ['1011010010110100','1101010101010101'],
       sep: ['audio/case1/our_sep_StemA.wav','audio/case1/our_sep_StemB.wav'],
       decodedBits: ['1011010010110100','1101010101010101'],
-      BER: ['0.00','0.00'],
+      BER: [0.00,0.00],
       mixed: { orig:'audio/case1/our_mixed_orig.wav', wm:'audio/case1/our_mixed_wm.wav'}
     }
   },
-  // 可以继续添加 case2, case3 ...
+  {
+    case: 2,
+    stems: ['StemA','StemB'],
+    baseline: {
+      orig: ['audio/case2/StemA_orig.wav','audio/case2/StemB_orig.wav'],
+      wm: ['audio/case2/StemA_wm.wav','audio/case2/StemB_wm.wav'],
+      embeddedBits: ['1010101010101010','1100110011001100'],
+      sep: ['audio/case2/baseline_sep_StemA.wav','audio/case2/baseline_sep_StemB.wav'],
+      decodedBits: ['1010?010?0101?0?','1100?100?1101??0'],
+      BER: [0.45,0.50],
+      mixed: { orig:'audio/case2/baseline_mixed_orig.wav', wm:'audio/case2/baseline_mixed_wm.wav'}
+    },
+    joint: {
+      orig: ['audio/case2/StemA_orig.wav','audio/case2/StemB_orig.wav'],
+      wm: ['audio/case2/StemA_wm.wav','audio/case2/StemB_wm.wav'],
+      embeddedBits: ['1010101010101010','1100110011001100'],
+      sep: ['audio/case2/our_sep_StemA.wav','audio/case2/our_sep_StemB.wav'],
+      decodedBits: ['1010101010101010','1100110011001100'],
+      BER: [0.00,0.00],
+      mixed: { orig:'audio/case2/our_mixed_orig.wav', wm:'audio/case2/our_mixed_wm.wav'}
+    }
+  },
+  {
+    case: 3,
+    stems: ['StemA','StemB'],
+    baseline: {
+      orig: ['audio/case3/StemA_orig.wav','audio/case3/StemB_orig.wav'],
+      wm: ['audio/case3/StemA_wm.wav','audio/case3/StemB_wm.wav'],
+      embeddedBits: ['1111000011110000','0000111100001111'],
+      sep: ['audio/case3/baseline_sep_StemA.wav','audio/case3/baseline_sep_StemB.wav'],
+      decodedBits: ['1111?000?1110?0?','0000?111?0001??1'],
+      BER: [0.47,0.51],
+      mixed: { orig:'audio/case3/baseline_mixed_orig.wav', wm:'audio/case3/baseline_mixed_wm.wav'}
+    },
+    joint: {
+      orig: ['audio/case3/StemA_orig.wav','audio/case3/StemB_orig.wav'],
+      wm: ['audio/case3/StemA_wm.wav','audio/case3/StemB_wm.wav'],
+      sep: ['audio/case3/our_sep_StemA.wav','audio/case3/our_sep_StemB.wav'],
+      decodedBits: ['1111000011110000','0000111100001111'],
+      BER: [0.00,0.00],
+      mixed: { orig:'audio/case3/our_mixed_orig.wav', wm:'audio/case3/our_mixed_wm.wav'}
+    }
+  }
 ];
 
-// 渲染 HTML
 const demoContainer = document.getElementById('demo-container');
+
 examples.forEach(example=>{
   ['baseline','joint'].forEach(method=>{
     const methodData = example[method];
     const title = method==='baseline' ? 'Baseline' : 'Jointly Trained';
     let stemHTML = '';
-    methodData.stems = methodData.stems || ['StemA','StemB']; // 默认
+
     methodData.stems.forEach((stem,idx)=>{
-      // 高亮错误 bit
       const embedded = methodData.embeddedBits[idx];
       const decoded = methodData.decodedBits[idx];
+      const BER = methodData.BER[idx];
       let bitHTML = '';
       for(let i=0;i<decoded.length;i++){
         if(decoded[i]!==embedded[i] && decoded[i]!=='?'){
@@ -112,6 +154,7 @@ examples.forEach(example=>{
           bitHTML += decoded[i];
         }
       }
+      let berColor = BER>0 ? '#fee2e2' : '#d1fae5';
 
       stemHTML += `<div>
         <p class="step-title">${stem}</p>
@@ -126,7 +169,7 @@ examples.forEach(example=>{
         <p class="text-sm step-title">Decoded Bits</p>
         <pre class="bit-display">${bitHTML}</pre>
         <p class="text-sm step-title">BER</p>
-        <span class="ber-display">${methodData.BER[idx]}</span>
+        <pre class="bit-display" style="background-color:${berColor}">${BER}</pre>
       </div>`;
     });
 

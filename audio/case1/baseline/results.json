@@ -1,0 +1,10 @@
+{
+    "song": "Dreamers Of The Ghetto - Heavy Love",
+    "crop_start_sec": 15.0,
+    "vocal_msg": "11100100010110011010001110011001",
+    "vocal_pred": "10001010111001011100010000101111",
+    "vocal_ber": 0.625,
+    "accomp_msg": "11011000110001011110010000101111",
+    "accomp_pred": "11011000110001011110010000101111",
+    "accomp_ber": 0.0
+}

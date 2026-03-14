@@ -28,7 +28,6 @@ audio { height: 30px; width: 100%; min-width: 150px; margin-bottom: 0.5rem; }
 <p class="text-center text-gray-600 italic academic-font">Supplementary Material (Anonymous)</p>
 </header>
 
-<!-- Abstract -->
 <section class="mb-12">
 <div class="card max-w-5xl mx-auto text-center">
 <h2 class="text-2xl font-bold mb-4 border-b-2 border-gray-800 pb-2 section-title">Abstract</h2>
@@ -40,7 +39,6 @@ Each method embeds watermarks in two stems (Accomp / Vocal), then mixes, separat
 </div>
 </section>
 
-<!-- Workflow -->
 <section class="mb-12">
 <div class="card max-w-5xl mx-auto text-center">
 <h2 class="text-2xl font-bold mb-4 border-b-2 border-gray-800 pb-2 section-title">Workflow Overview</h2>
@@ -53,7 +51,6 @@ The following diagram shows the end-to-end pipeline:
 </div>
 </section>
 
-<!-- Audio Demonstration -->
 <section class="mb-20">
 <div class="card max-w-5xl mx-auto">
 <h2 class="text-2xl font-bold mb-6 border-b-2 border-gray-800 pb-2 section-title">Audio Demonstration: Baseline, Joint, Finetuned</h2>
@@ -71,68 +68,71 @@ const demoContainer = document.getElementById('demo-container');
 const stems = ['accomp','vocal'];
 const methods = ['baseline','joint','finetuned'];
 
-for (let caseIdx = 1; caseIdx <= 3; caseIdx++) {
-  methods.forEach(method => {
+async function loadCase(caseIdx) {
+  for (const method of methods) {
     const jsonPath = `audio/case${caseIdx}/${method}/results.json`;
+    try {
+      const data = await fetch(jsonPath).then(res => res.json());
+      let stemHTML = '';
 
-    fetch(jsonPath)
-      .then(res => res.json())
-      .then(data => {
-        let stemHTML = '';
+      stems.forEach(stem => {
+        const embedded = stem==='vocal' ? data.vocal_msg : data.accomp_msg;
+        const decoded  = stem==='vocal' ? data.vocal_pred : data.accomp_pred;
+        const BER      = stem==='vocal' ? data.vocal_ber : data.accomp_ber;
 
-        stems.forEach(stem => {
-          const embedded = stem==='vocal' ? data.vocal_msg : data.accomp_msg;
-          const decoded  = stem==='vocal' ? data.vocal_pred : data.accomp_pred;
-          const BER      = stem==='vocal' ? data.vocal_ber : data.accomp_ber;
+        const bitHTML = decoded.split('').map((c,j)=>c!==embedded[j] && c!=='?' ? `<span class="bit-error">${c}</span>` : c).join('');
+        const berColor = BER > 0 ? '#fee2e2' : '#d1fae5';
 
-          const bitHTML = decoded.split('').map((c,j)=>c!==embedded[j] && c!=='?' ? `<span class="bit-error">${c}</span>` : c).join('');
-          const berColor = BER > 0 ? '#fee2e2' : '#d1fae5';
+        const originFile = `audio/case${caseIdx}/${method}/01_${stem}_orig.wav`;
+        const wmFile     = `audio/case${caseIdx}/${method}/03_${stem}_watermarked.wav`;
+        const sepFile    = `audio/case${caseIdx}/${method}/05_${stem}_predicted.wav`;
+        const mixOrig    = `audio/case${caseIdx}/${method}/02_mix_orig.wav`;
+        const mixWm      = `audio/case${caseIdx}/${method}/04_mix_watermarked.wav`;
 
-          // 音频路径
-          const originFile = `audio/case${caseIdx}/${method}/01_${stem}_orig.wav`;
-          const wmFile = `audio/case${caseIdx}/${method}/03_${stem}_watermarked.wav`;
-          const sepFile = `audio/case${caseIdx}/${method}/05_${stem}_predicted.wav`;
-          const mixOrig = `audio/case${caseIdx}/${method}/02_mix_orig.wav`;
-          const mixWm = `audio/case${caseIdx}/${method}/04_mix_watermarked.wav`;
-
-          stemHTML += `
-          <div>
-            <p class="step-title">${stem}</p>
-            <p class="text-sm step-title">Origin</p>
-            <audio controls src="${originFile}"></audio>
-            <p class="text-sm step-title">Watermarked</p>
-            <audio controls src="${wmFile}"></audio>
-            <p class="text-sm step-title">Embedded Watermark Bits</p>
-            <pre class="bit-display">${embedded}</pre>
-            <p class="text-sm step-title">Separated Audio</p>
-            <audio controls src="${sepFile}"></audio>
-            <p class="text-sm step-title">Decoded Bits</p>
-            <pre class="bit-display">${bitHTML}</pre>
-            <p class="text-sm step-title">BER</p>
-            <pre class="bit-display" style="background-color:${berColor}">${BER}</pre>
-          </div>`;
-        });
-
-        demoContainer.innerHTML += `
-        <div class="case-container">
-          <h3 class="text-lg font-bold mb-4 academic-font">Mixture Case #${caseIdx} - ${method.charAt(0).toUpperCase()+method.slice(1)}</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">${stemHTML}</div>
-          <h4 class="step-title mt-4">Mixed Audio (${method.charAt(0).toUpperCase()+method.slice(1)})</h4>
-          <div class="mix-row">
-            <div class="mix-col">
-              <p class="text-sm">Original Stems Mixed</p>
-              <audio controls src="audio/case${caseIdx}/${method}/02_mix_orig.wav"></audio>
-            </div>
-            <div class="mix-col">
-              <p class="text-sm">Watermarked Stems Mixed</p>
-              <audio controls src="audio/case${caseIdx}/${method}/04_mix_watermarked.wav"></audio>
-            </div>
-          </div>
-          <div class="method-divider"></div>
+        stemHTML += `
+        <div>
+          <p class="step-title">${stem}</p>
+          <p class="text-sm step-title">Origin</p>
+          <audio controls src="${originFile}"></audio>
+          <p class="text-sm step-title">Watermarked</p>
+          <audio controls src="${wmFile}"></audio>
+          <p class="text-sm step-title">Embedded Watermark Bits</p>
+          <pre class="bit-display">${embedded}</pre>
+          <p class="text-sm step-title">Separated Audio</p>
+          <audio controls src="${sepFile}"></audio>
+          <p class="text-sm step-title">Decoded Bits</p>
+          <pre class="bit-display">${bitHTML}</pre>
+          <p class="text-sm step-title">BER</p>
+          <pre class="bit-display" style="background-color:${berColor}">${BER}</pre>
         </div>`;
-      })
-      .catch(err => console.error(`Failed to load JSON for case ${caseIdx} method ${method}:`, err));
-  });
+      });
+
+      demoContainer.innerHTML += `
+      <div class="case-container">
+        <h3 class="text-lg font-bold mb-4 academic-font">Mixture Case #${caseIdx} - ${method.charAt(0).toUpperCase() + method.slice(1)}</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">${stemHTML}</div>
+
+        <h4 class="step-title mt-4">Mixed Audio (${method.charAt(0).toUpperCase() + method.slice(1)})</h4>
+        <div class="mix-row">
+          <div class="mix-col">
+            <p class="text-sm">Original Stems Mixed</p>
+            <audio controls src="audio/case${caseIdx}/${method}/02_mix_orig.wav"></audio>
+          </div>
+          <div class="mix-col">
+            <p class="text-sm">Watermarked Stems Mixed</p>
+            <audio controls src="audio/case${caseIdx}/${method}/04_mix_watermarked.wav"></audio>
+          </div>
+        </div>
+        <div class="method-divider"></div>
+      </div>`;
+    } catch (err) {
+      console.error(`Failed to load JSON for case ${caseIdx}, method ${method}`, err);
+    }
+  }
+}
+
+for (let caseIdx=1; caseIdx<=3; caseIdx++) {
+  loadCase(caseIdx);
 }
 </script>
 </body>

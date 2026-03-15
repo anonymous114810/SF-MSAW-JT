@@ -1,278 +1,399 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Audio Watermarking Demo: Baseline, Joint, Finetuned</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body { font-family: "Times New Roman", Georgia, serif; }
-    .academic-font { font-family: Arial, Helvetica, sans-serif; }
-    audio { height: 30px; width: 100%; min-width: 150px; margin-bottom: 0.5rem; }
-    .step-title { font-weight: 600; color: #1f2937; margin-top: 1rem; margin-bottom: 0.25rem; }
-    .bit-display {
-      font-family: monospace;
-      font-size: 0.85rem;
-      padding: 4px 8px;
-      border-radius: 4px;
-      background-color: #f3f4f6;
-      white-space: pre-wrap;
-      word-break: break-all;
-      line-height: 1.5;
-    }
-    .bit-error { color: #dc2626; font-weight: 700; }
-    .case-container {
-      border: 1px solid #e5e7eb;
-      padding: 1rem;
-      border-radius: 8px;
-      margin-bottom: 2rem;
-      background-color: #ffffff;
-    }
-    .mix-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem; }
-    .mix-col { flex: 1 1 48%; }
-    .method-divider { border-top: 2px dashed #9ca3af; margin: 2rem 0; }
-    .section-title { text-align: center; }
-    .card {
-      background-color: #f3f4f6;
-      padding: 1.5rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      margin-bottom: 2rem;
-    }
-    .meta-note {
-      font-size: 0.8rem;
-      color: #6b7280;
-      margin-top: 0.5rem;
-    }
-    .loading-note {
-      font-size: 0.9rem;
-      color: #6b7280;
-      text-align: center;
-      padding: 1rem 0;
-    }
-    .error-box {
-      border: 1px solid #fecaca;
-      background: #fef2f2;
-      color: #991b1b;
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      font-size: 0.9rem;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audio Watermarking Demo</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body { font-family: "Times New Roman", Georgia, serif; }
+
+.academic-font { font-family: Arial, Helvetica, sans-serif; }
+
+audio{
+height:30px;
+width:100%;
+min-width:150px;
+margin-bottom:6px;
+}
+
+.step-title{
+font-weight:600;
+color:#1f2937;
+margin-top:8px;
+margin-bottom:2px;
+}
+
+.step-desc{
+font-size:11px;
+color:#6b7280;
+margin-bottom:4px;
+}
+
+.bit-display{
+font-family:monospace;
+font-size:0.85rem;
+padding:6px;
+border-radius:4px;
+background:#f3f4f6;
+word-break:break-all;
+}
+
+.bit-error{
+color:#dc2626;
+font-weight:bold;
+}
+
+.case-container{
+border:1px solid #e5e7eb;
+padding:1rem;
+border-radius:8px;
+background:#ffffff;
+}
+
+.method-divider{
+border-top:2px dashed #9ca3af;
+margin:2rem 0;
+}
+
+.mix-row{
+display:flex;
+gap:1rem;
+flex-wrap:wrap;
+margin-top:1rem;
+}
+
+.mix-col{
+flex:1 1 48%;
+}
+
+.card{
+background:#f3f4f6;
+padding:1.5rem;
+border-radius:8px;
+margin-bottom:2rem;
+}
+
+/* method colors */
+
+.baseline-title{ color:#6b7280; }
+.joint-title{ color:#2563eb; }
+.finetuned-title{ color:#16a34a; }
+
+</style>
 </head>
+
 <body class="bg-white text-gray-900 leading-relaxed p-6 md:p-12">
 
-  <div class="max-w-7xl mx-auto">
-    <header class="mb-12 border-b pb-8">
-      <h1 class="text-3xl font-bold mb-4 text-center">Audio Watermarking Demo</h1>
-      <p class="text-center text-gray-600 italic academic-font">Supplementary Material (Anonymous)</p>
-    </header>
+<div class="max-w-7xl mx-auto">
 
-    <section class="mb-12">
-      <div class="card max-w-5xl mx-auto text-center">
-        <h2 class="text-2xl font-bold mb-4 border-b-2 border-gray-800 pb-2 section-title">Abstract</h2>
-        <p class="text-gray-700 academic-font text-sm leading-relaxed">
-          This demo illustrates a separation-first, multi-stream audio watermarking framework.
-          Three methods are shown: Baseline, Jointly Trained, and Finetuned.
-          Each method embeds watermarks in two stems (Accomp / Vocal), then mixes, separates, and decodes the audio.
-        </p>
-      </div>
-    </section>
+<header class="mb-12 border-b pb-8">
 
-    <section class="mb-12">
-      <div class="card max-w-5xl mx-auto text-center">
-        <h2 class="text-2xl font-bold mb-4 border-b-2 border-gray-800 pb-2 section-title">Workflow Overview</h2>
-        <p class="text-gray-700 academic-font text-sm mb-4">
-          The following diagram shows the end-to-end pipeline:
-        </p>
-        <div class="flex justify-center mb-6">
-          <img src="figure/figure1.png" alt="Workflow" class="max-w-full md:max-w-4xl border rounded shadow-md" />
-        </div>
-      </div>
-    </section>
+<h1 class="text-3xl font-bold mb-4 text-center">
+Audio Watermarking Demo
+</h1>
 
-    <section class="mb-20">
-      <div class="card max-w-5xl mx-auto">
-        <h2 class="text-2xl font-bold mb-6 border-b-2 border-gray-800 pb-2 section-title">
-          Audio Demonstration: Baseline, Joint, Finetuned
-        </h2>
-        <div id="demo-container" class="space-y-12">
-          <div class="loading-note">Loading cases...</div>
-        </div>
-      </div>
-    </section>
+<p class="text-center text-gray-600 italic academic-font">
+Supplementary Material (Anonymous)
+</p>
 
-    <footer class="mt-20 pt-8 border-t text-center text-gray-500 text-xs academic-font">
-      <p>Anonymous Paper Demo Page</p>
-    </footer>
-  </div>
+</header>
 
-  <script>
-    const demoContainer = document.getElementById("demo-container");
-    const stems = ["accomp", "vocal"];
-    const methods = ["baseline", "joint", "finetuned"];
-    const methodDisplayNames = {
-      baseline: "Baseline",
-      joint: "Joint",
-      finetuned: "Finetuned"
-    };
 
-    function escapeHtml(str) {
-      return String(str ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
+<!-- Abstract -->
 
-    function highlightBitErrors(embedded, decoded) {
-      const eStr = String(embedded ?? "");
-      const dStr = String(decoded ?? "");
-      const maxLen = Math.max(eStr.length, dStr.length);
-      let html = "";
+<section class="mb-12">
 
-      for (let i = 0; i < maxLen; i++) {
-        const e = eStr[i] ?? "";
-        const d = dStr[i] ?? "";
-        const safe = escapeHtml(d);
+<div class="card max-w-5xl mx-auto text-center">
 
-        if (d && d !== e) {
-          html += `<span class="bit-error">${safe}</span>`;
-        } else {
-          html += safe;
-        }
-      }
-      return html;
-    }
+<h2 class="text-2xl font-bold mb-4 border-b-2 border-gray-800 pb-2">
+Abstract
+</h2>
 
-    function formatBerValue(ber) {
-      const num = Number(ber);
-      if (Number.isNaN(num)) return escapeHtml(ber);
-      return num.toFixed(3);
-    }
+<p class="text-gray-700 academic-font text-sm leading-relaxed">
 
-    function berBackground(ber) {
-      const num = Number(ber);
-      if (Number.isNaN(num)) return "#f3f4f6";
-      return num > 0 ? "#fee2e2" : "#d1fae5";
-    }
+Modern audio content is often created by mixing stems from multiple sources.
+This work studies separation-first multi-stream audio watermarking,
+where each stem carries an independent watermark.
+We demonstrate that naive combinations of watermarking and source separation
+lead to poor post-separation decoding accuracy.
+By jointly training the watermarking system with the separator,
+watermark robustness after separation can be significantly improved
+while maintaining perceptual audio quality.
 
-    function stemLabel(stem) {
-      return stem === "accomp" ? "Accomp" : "Vocal";
-    }
+</p>
 
-    function buildStemBlock(caseIdx, method, stem, data) {
-      const embedded = stem === "vocal" ? data.vocal_msg : data.accomp_msg;
-      const decoded = stem === "vocal" ? data.vocal_pred : data.accomp_pred;
-      const ber = stem === "vocal" ? data.vocal_ber : data.accomp_ber;
+</div>
 
-      const originFile = `audio/case${caseIdx}/${method}/01_${stem}_orig.wav`;
-      const wmFile = `audio/case${caseIdx}/${method}/03_${stem}_watermarked.wav`;
-      const sepFile = `audio/case${caseIdx}/${method}/05_${stem}_predicted.wav`;
+</section>
 
-      return `
-        <div>
-          <p class="step-title">${stemLabel(stem)}</p>
 
-          <p class="text-sm step-title">Origin</p>
-          <audio controls preload="none" src="${originFile}"></audio>
 
-          <p class="text-sm step-title">Watermarked</p>
-          <audio controls preload="none" src="${wmFile}"></audio>
+<!-- Workflow -->
 
-          <p class="text-sm step-title">Embedded Watermark Bits</p>
-          <pre class="bit-display">${escapeHtml(embedded)}</pre>
+<section class="mb-12">
 
-          <p class="text-sm step-title">Separated Audio</p>
-          <audio controls preload="none" src="${sepFile}"></audio>
+<div class="card max-w-5xl mx-auto text-center">
 
-          <p class="text-sm step-title">Decoded Bits</p>
-          <pre class="bit-display">${highlightBitErrors(embedded, decoded)}</pre>
+<h2 class="text-2xl font-bold mb-4 border-b-2 border-gray-800 pb-2">
+Workflow Overview
+</h2>
 
-          <p class="text-sm step-title">BER</p>
-          <pre class="bit-display" style="background-color:${berBackground(ber)}">${formatBerValue(ber)}</pre>
-        </div>
-      `;
-    }
+<p class="text-gray-700 academic-font text-sm mb-4">
 
-    function buildMethodBlock(caseIdx, method, data) {
-      const title = methodDisplayNames[method];
-      const mixOrig = `audio/case${caseIdx}/${method}/02_mix_orig.wav`;
-      const mixWm = `audio/case${caseIdx}/${method}/04_mix_watermarked.wav`;
+The following diagram shows the separation-first watermarking pipeline.
 
-      const stemsHtml = stems.map(stem => buildStemBlock(caseIdx, method, stem, data)).join("");
+</p>
 
-      const metaParts = [];
-      if (data.song) metaParts.push(`Song: ${escapeHtml(data.song)}`);
-      if (data.crop_start_sec !== undefined) metaParts.push(`Crop start: ${escapeHtml(data.crop_start_sec)} s`);
-      const metaHtml = metaParts.length
-        ? `<p class="meta-note academic-font">${metaParts.join(" · ")}</p>`
-        : "";
+<div class="flex justify-center">
 
-      return `
-        <div class="case-container">
-          <h3 class="text-lg font-bold mb-2 academic-font">Mixture Case #${caseIdx} - ${title}</h3>
-          ${metaHtml}
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
-            ${stemsHtml}
-          </div>
+<img src="figure/figure1.png"
+class="max-w-full md:max-w-4xl border rounded shadow-md">
 
-          <h4 class="step-title mt-4">Mixed Audio (${title})</h4>
-          <div class="mix-row">
-            <div class="mix-col">
-              <p class="text-sm">Original Stems Mixed</p>
-              <audio controls preload="none" src="${mixOrig}"></audio>
-            </div>
-            <div class="mix-col">
-              <p class="text-sm">Watermarked Stems Mixed</p>
-              <audio controls preload="none" src="${mixWm}"></audio>
-            </div>
-          </div>
-        </div>
-      `;
-    }
+</div>
 
-    async function fetchJson(caseIdx, method) {
-      const path = `audio/case${caseIdx}/${method}/results.json`;
-      const res = await fetch(path, { cache: "no-store" });
-      if (!res.ok) {
-        throw new Error(`Failed to load ${path} (${res.status})`);
-      }
-      return await res.json();
-    }
+</div>
 
-    async function renderAllCases() {
-      let fullHtml = "";
+</section>
 
-      for (let caseIdx = 1; caseIdx <= 3; caseIdx++) {
-        for (const method of methods) {
-          try {
-            const data = await fetchJson(caseIdx, method);
-            fullHtml += buildMethodBlock(caseIdx, method, data);
-          } catch (err) {
-            console.error(err);
-            fullHtml += `
-              <div class="error-box">
-                Failed to load Case ${caseIdx} / ${methodDisplayNames[method]}.
-                Please check
-                <code>audio/case${caseIdx}/${method}/results.json</code>
-                and the corresponding audio files.
-              </div>
-            `;
-          }
 
-          if (!(caseIdx === 3 && method === "finetuned")) {
-            fullHtml += `<div class="method-divider"></div>`;
-          }
-        }
-      }
 
-      demoContainer.innerHTML = fullHtml;
-    }
+<!-- Example Section -->
 
-    renderAllCases();
-  </script>
+<section class="mb-20">
+
+<div class="card max-w-6xl mx-auto">
+
+<h2 class="text-2xl font-bold mb-6 border-b-2 border-gray-800 pb-2 text-center">
+
+Audio Demonstration: Baseline, Joint, Finetuned
+
+</h2>
+
+
+<!-- Example explanation -->
+
+<p class="text-gray-700 academic-font text-sm leading-relaxed mb-6 text-center">
+
+The examples below demonstrate the separation-first watermarking pipeline shown above.
+In each case, the left column corresponds to the Accompaniment stem and the right column corresponds to the Vocal stem.
+Each stem is independently watermarked with a different key and bit sequence.
+
+The watermarked stems are mixed, separated using the Demucs separator,
+and decoded from each separated stem.
+
+For each method (Baseline, Joint, Finetuned),
+we show the original stems, watermarked stems,
+embedded watermark bits, separated stems,
+and the decoded bits with BER.
+Incorrect bits are highlighted in red.
+
+</p>
+
+
+<div id="demo-container" class="space-y-12"></div>
+
+</div>
+
+</section>
+
+
+<footer class="mt-20 pt-8 border-t text-center text-gray-500 text-xs academic-font">
+
+<p>Anonymous Paper Demo Page</p>
+
+</footer>
+
+</div>
+
+
+
+<script>
+
+const demoContainer = document.getElementById("demo-container");
+
+const stems=["accomp","vocal"];
+
+const methods=["baseline","joint","finetuned"];
+
+const methodDisplay={
+baseline:"Baseline",
+joint:"Joint",
+finetuned:"Finetuned"
+};
+
+const methodClass={
+baseline:"baseline-title",
+joint:"joint-title",
+finetuned:"finetuned-title"
+};
+
+
+
+function highlightBits(msg,pred){
+
+let html="";
+
+for(let i=0;i<msg.length;i++){
+
+if(pred[i]!==msg[i]){
+
+html+=`<span class="bit-error">${pred[i]}</span>`;
+
+}else{
+
+html+=pred[i];
+
+}
+
+}
+
+return html;
+
+}
+
+
+
+async function loadJSON(caseIdx,method){
+
+const path=`audio/case${caseIdx}/${method}/results.json`;
+
+const res=await fetch(path);
+
+return await res.json();
+
+}
+
+
+
+function stemHTML(caseIdx,method,stem,data){
+
+const msg=stem==="vocal"?data.vocal_msg:data.accomp_msg;
+
+const pred=stem==="vocal"?data.vocal_pred:data.accomp_pred;
+
+const ber=stem==="vocal"?data.vocal_ber:data.accomp_ber;
+
+const berColor=ber>0?"#fee2e2":"#d1fae5";
+
+return `
+
+<div>
+
+<p class="text-xl font-semibold mb-1">
+
+${stem==="accomp"?"Accomp":"Vocal"}
+
+</p>
+
+<p class="step-title">Origin</p>
+<p class="step-desc">Original stem audio.</p>
+<audio controls src="audio/case${caseIdx}/${method}/01_${stem}_orig.wav"></audio>
+
+<p class="step-title">Watermarked</p>
+<p class="step-desc">Stem audio after watermark embedding.</p>
+<audio controls src="audio/case${caseIdx}/${method}/03_${stem}_watermarked.wav"></audio>
+
+<p class="step-title">Embedded Watermark Bits</p>
+<p class="step-desc">Bit sequence embedded into this stem.</p>
+<pre class="bit-display">${msg}</pre>
+
+<p class="step-title">Separated Audio</p>
+<p class="step-desc">Stem separated by the Demucs separator.</p>
+<audio controls src="audio/case${caseIdx}/${method}/05_${stem}_predicted.wav"></audio>
+
+<p class="step-title">Decoded Bits</p>
+<p class="step-desc">Bits decoded from the separated stem.</p>
+<pre class="bit-display">${highlightBits(msg,pred)}</pre>
+
+<p class="step-title">BER</p>
+<p class="step-desc">Bit Error Rate of the decoded message.</p>
+<pre class="bit-display" style="background:${berColor}">${ber}</pre>
+
+</div>
+
+`;
+
+}
+
+
+
+async function render(){
+
+let html="";
+
+for(let caseIdx=1;caseIdx<=3;caseIdx++){
+
+for(const method of methods){
+
+const data=await loadJSON(caseIdx,method);
+
+html+=`
+
+<div class="case-container">
+
+<h3 class="text-lg font-bold mb-4 academic-font ${methodClass[method]}">
+
+Mixture Case #${caseIdx} — ${methodDisplay[method]}
+
+</h3>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+${stemHTML(caseIdx,method,"accomp",data)}
+
+${stemHTML(caseIdx,method,"vocal",data)}
+
+</div>
+
+<h4 class="step-title mt-6">
+
+Mixed Audio (${methodDisplay[method]})
+
+</h4>
+
+<div class="mix-row">
+
+<div class="mix-col">
+
+<p class="text-sm">Original Stems Mixed</p>
+
+<audio controls src="audio/case${caseIdx}/${method}/02_mix_orig.wav"></audio>
+
+</div>
+
+<div class="mix-col">
+
+<p class="text-sm">Watermarked Stems Mixed</p>
+
+<audio controls src="audio/case${caseIdx}/${method}/04_mix_watermarked.wav"></audio>
+
+</div>
+
+</div>
+
+</div>
+
+`;
+
+if(!(caseIdx===3 && method==="finetuned")){
+
+html+=`<div class="method-divider"></div>`;
+
+}
+
+}
+
+}
+
+demoContainer.innerHTML=html;
+
+}
+
+render();
+
+</script>
+
 </body>
 </html>

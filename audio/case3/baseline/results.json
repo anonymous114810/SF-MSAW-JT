@@ -1,0 +1,10 @@
+{
+    "song": "A Classic Education - NightOwl",
+    "crop_start_sec": 45.0,
+    "vocal_msg": "10001001111011110111000100111111",
+    "vocal_pred": "10001001101011110111001100000110",
+    "vocal_ber": 0.1875,
+    "accomp_msg": "00001001000011110101001110000110",
+    "accomp_pred": "00001001000011110101001110000110",
+    "accomp_ber": 0.0
+}

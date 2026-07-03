@@ -61,11 +61,40 @@ margin:2rem 0;
 display:flex;
 gap:1rem;
 flex-wrap:wrap;
-margin-top:1rem;
+margin-top:0.75rem;
 }
 
 .mix-col{
 flex:1 1 48%;
+}
+
+.stage{
+margin-top:1.25rem;
+}
+
+.stage-heading{
+font-family:Arial, Helvetica, sans-serif;
+font-size:0.78rem;
+font-weight:700;
+letter-spacing:0.08em;
+text-transform:uppercase;
+color:#4b5563;
+border-top:1px solid #e5e7eb;
+padding-top:0.75rem;
+margin-bottom:0.75rem;
+}
+
+.mix-stage{
+background:#f9fafb;
+border:1px solid #e5e7eb;
+border-radius:8px;
+padding:0.875rem;
+}
+
+.stem-heading{
+font-size:1.25rem;
+font-weight:600;
+margin-bottom:0.25rem;
 }
 
 .card{
@@ -180,13 +209,13 @@ The examples below demonstrate the separation-first watermarking pipeline shown 
 In each case, the left column corresponds to the Accompaniment stem and the right column corresponds to the Vocal stem.
 Each stem is independently watermarked with a different key and bit sequence.
 
-The watermarked stems are mixed, separated using the Demucs separator,
+We first show the original and watermarked stems with their embedded bits.
+The watermarked stems are then mixed, separated using the Demucs separator,
 and decoded from each separated stem.
 
 For each method (Baseline, Joint, Finetuned),
-we show the original stems, watermarked stems,
-embedded watermark bits, separated stems,
-and the decoded bits with BER.
+we show the stem-level embedding stage, the mixed audio stage,
+and the post-separation decoding stage with BER.
 Incorrect bits are highlighted in red.
 
 </p>
@@ -267,21 +296,15 @@ return await res.json();
 
 
 
-function stemHTML(caseIdx,method,stem,data){
+function stemEmbeddingHTML(caseIdx,method,stem,data){
 
 const msg=stem==="vocal"?data.vocal_msg:data.accomp_msg;
-
-const pred=stem==="vocal"?data.vocal_pred:data.accomp_pred;
-
-const ber=stem==="vocal"?data.vocal_ber:data.accomp_ber;
-
-const berColor=ber>0?"#fee2e2":"#d1fae5";
 
 return `
 
 <div>
 
-<p class="text-xl font-semibold mb-1">
+<p class="stem-heading">
 
 ${stem==="accomp"?"Accomp":"Vocal"}
 
@@ -299,6 +322,34 @@ ${stem==="accomp"?"Accomp":"Vocal"}
 <p class="step-desc">Bit sequence embedded into this stem.</p>
 <pre class="bit-display">${msg}</pre>
 
+</div>
+
+`;
+
+}
+
+
+
+function stemDecodingHTML(caseIdx,method,stem,data){
+
+const msg=stem==="vocal"?data.vocal_msg:data.accomp_msg;
+
+const pred=stem==="vocal"?data.vocal_pred:data.accomp_pred;
+
+const ber=stem==="vocal"?data.vocal_ber:data.accomp_ber;
+
+const berColor=ber>0?"#fee2e2":"#d1fae5";
+
+return `
+
+<div>
+
+<p class="stem-heading">
+
+${stem==="accomp"?"Accomp":"Vocal"}
+
+</p>
+
 <p class="step-title">Separated Audio</p>
 <p class="step-desc">Stem separated by the Demucs separator.</p>
 <audio controls src="audio/case${caseIdx}/${method}/05_${stem}_predicted.wav"></audio>
@@ -310,6 +361,46 @@ ${stem==="accomp"?"Accomp":"Vocal"}
 <p class="step-title">BER</p>
 <p class="step-desc">Bit Error Rate of the decoded message.</p>
 <pre class="bit-display" style="background:${berColor}">${ber}</pre>
+
+</div>
+
+`;
+
+}
+
+
+
+function mixedHTML(caseIdx,method){
+
+return `
+
+<div class="stage">
+
+<div class="stage-heading">2. Mixed Audio (${methodDisplay[method]})</div>
+
+<div class="mix-stage">
+
+<div class="mix-row">
+
+<div class="mix-col">
+
+<p class="text-sm">Original Stems Mixed</p>
+
+<audio controls src="audio/case${caseIdx}/${method}/02_mix_orig.wav"></audio>
+
+</div>
+
+<div class="mix-col">
+
+<p class="text-sm">Watermarked Stems Mixed</p>
+
+<audio controls src="audio/case${caseIdx}/${method}/04_mix_watermarked.wav"></audio>
+
+</div>
+
+</div>
+
+</div>
 
 </div>
 
@@ -339,35 +430,27 @@ Mixture Case #${caseIdx} — ${methodDisplay[method]}
 
 </h3>
 
+<div class="stage-heading">1. Stem Watermark Embedding</div>
+
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
-${stemHTML(caseIdx,method,"accomp",data)}
+${stemEmbeddingHTML(caseIdx,method,"accomp",data)}
 
-${stemHTML(caseIdx,method,"vocal",data)}
-
-</div>
-
-<h4 class="step-title mt-6">
-
-Mixed Audio (${methodDisplay[method]})
-
-</h4>
-
-<div class="mix-row">
-
-<div class="mix-col">
-
-<p class="text-sm">Original Stems Mixed</p>
-
-<audio controls src="audio/case${caseIdx}/${method}/02_mix_orig.wav"></audio>
+${stemEmbeddingHTML(caseIdx,method,"vocal",data)}
 
 </div>
 
-<div class="mix-col">
+${mixedHTML(caseIdx,method)}
 
-<p class="text-sm">Watermarked Stems Mixed</p>
+<div class="stage">
 
-<audio controls src="audio/case${caseIdx}/${method}/04_mix_watermarked.wav"></audio>
+<div class="stage-heading">3. Separation and Recognition</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+${stemDecodingHTML(caseIdx,method,"accomp",data)}
+
+${stemDecodingHTML(caseIdx,method,"vocal",data)}
 
 </div>
 
